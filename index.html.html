@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colombia's Carbon Price: What the Numbers Mean</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --green-deep: #0F6E56;
+    --green-mid: #1D9E75;
+    --green-light: #E1F5EE;
+    --green-pale: #9FE1CB;
+    --amber: #BA7517;
+    --amber-light: #FAEEDA;
+    --amber-pale: #FAC775;
+    --red: #A32D2D;
+    --red-light: #FCEBEB;
+    --blue: #185FA5;
+    --blue-light: #E6F1FB;
+    --blue-pale: #B5D4F4;
+    --gray: #444441;
+    --gray-light: #F1EFE8;
+    --gray-mid: #888780;
+    --text: #1a1a18;
+    --text-muted: #5F5E5A;
+    --border: rgba(0,0,0,0.1);
+    --bg: #ffffff;
+    --bg-surface: #f8f7f4;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --text: #f0ede6;
+      --text-muted: #B4B2A9;
+      --border: rgba(255,255,255,0.12);
+      --bg: #1a1a18;
+      --bg-surface: #242422;
+      --green-light: #085041;
+      --amber-light: #412402;
+      --red-light: #501313;
+      --blue-light: #042C53;
+      --gray-light: #2C2C2A;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 16px;
+  }
+  .hero {
+    background: var(--green-deep);
+    color: white;
+    padding: 3rem 2rem 4rem;
+    text-align: center;
+  }
+  .hero h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+  }
+  .hero p {
+    font-size: 1.1rem;
+    opacity: 0.85;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .nav {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 1.5rem 1rem;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    transition: all 0.15s;
+    background: var(--bg);
+  }
+  .nav a:hover, .nav a.active {
+    background: var(--green-deep);
+    color: white;
+    border-color: var(--green-deep);
+  }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+  section {
+    padding: 3.5rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  section:last-child { border-bottom: none; }
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--green-mid);
+    margin-bottom: 0.5rem;
+  }
+  h2 {
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    line-height: 1.25;
+    color: var(--text);
+  }
+  .lead {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    max-width: 680px;
+    line-height: 1.7;
+  }
+  .card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+  }
+  .card-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  .stat-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.1;
+    margin-bottom: 0.25rem;
+  }
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    margin: 1.5rem 0;
+  }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    align-items: center;
+  }
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    flex: 1;
+    min-width: 180px;
+  }
+  .control-group label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  input[type=range] {
+    width: 100%;
+    accent-color: var(--green-mid);
+    cursor: pointer;
+  }
+  .slider-val {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--green-deep);
+    min-width: 60px;
+    display: inline-block;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .callout {
+    border-left: 4px solid var(--green-mid);
+    background: var(--green-light);
+    padding: 1rem 1.25rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin: 1.5rem 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  .callout.amber {
+    border-left-color: var(--amber);
+    background: var(--amber-light);
+  }
+  .callout.red {
+    border-left-color: var(--red);
+    background: var(--red-light);
+  }
+  .callout.blue {
+    border-left-color: var(--blue);
+    background: var(--blue-light);
+  }
+  .callout strong { color: var(--text); }
+  .tabs {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tab-btn.active, .tab-btn:hover {
+    background: var(--green-deep);
+    color: white;
+    border-color: var(--green-deep);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .ecosystem-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  .eco-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    background: var(--bg);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .eco-card:hover { border-color: var(--green-mid); transform: translateY(-2px); }
+  .eco-card.selected {
+    border-color: var(--green-deep);
+    border-width: 2px;
+    background: var(--green-light);
+  }
+  .eco-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .eco-card h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.25rem; }
+  .eco-card p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+  .eco-detail {
+    background: var(--green-light);
+    border: 1px solid var(--green-pale);
+    border-radius: var(--radius-sm);
+    padding: 1.25rem;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    display: none;
+  }
+  .eco-detail.visible { display: block; }
+  .timeline {
+    position: relative;
+    margin: 1.5rem 0;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .timeline-item {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  .timeline-dot {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    z-index: 1;
+    border: 2px solid var(--bg);
+  }
+  .timeline-dot.done { background: var(--green-mid); }
+  .timeline-dot.partial { background: var(--amber-pale); }
+  .timeline-dot.pending { background: var(--gray-light); border: 2px solid var(--border); }
+  .timeline-content { padding-top: 4px; }
+  .timeline-content h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.2rem; }
+  .timeline-content p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .badge-green { background: var(--green-light); color: var(--green-deep); }
+  .badge-amber { background: var(--amber-light); color: var(--amber); }
+  .badge-red { background: var(--red-light); color: var(--red); }
+  .footer {
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .footer a { color: var(--green-mid); text-decoration: none; }
+  @media (max-width: 600px) {
+    .hero { padding: 2rem 1rem 3rem; }
+    section { padding: 2.5rem 0 1.5rem; }
+    .container { padding: 0 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Colombia's Carbon Price:<br>What the Numbers Mean</h1>
+  <p>An interactive explainer on why Colombia's climate policy is set at the wrong level — and what it would take to fix it.</p>
+</div>
+
+<nav class="nav" aria-label="Sections">
+  <a href="#pricing-gap" class="active">The pricing gap</a>
+  <a href="#why-it-matters">Why it matters</a>
+  <a href="#discount-rate">Discount rates</a>
+  <a href="#tipping-points">Tipping points</a>
+  <a href="#natural-capital">Natural capital</a>
+  <a href="#recommendations">What to do</a>
+</nav>
+
+<main>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 1: PRICING GAP -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section id="pricing-gap">
+<div class="container">
+  <div class="section-label">Section 1</div>
+  <h2>The carbon pricing gap</h2>
+  <p class="lead">Colombia's carbon tax is supposed to make polluters pay for the harm they cause. In practice, most emitters receive a <em>subsidy</em> — not a penalty. Here's what that looks like compared to what the science says.</p>
+
+  <div class="card-row">
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--red);">EUR 8.2</div>
+      <div class="stat-label">Colombia's carbon price per tonne in 2023</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--red);">–EUR 12.2</div>
+      <div class="stat-label">Effective rate after subsidies (net <em>subsidy</em> to emitters)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--green-mid);">USD 185–1,013</div>
+      <div class="stat-label">Scientific estimate of the true cost per tonne</div>
+    </div>
+  </div>
+
+  <div class="callout red">
+    <strong>Only 13%</strong> of Colombia's greenhouse gas emissions faced any positive carbon price in 2023. Road transport — which moves most of the country's food — had less than <strong>3%</strong> of emissions priced, with the rest effectively subsidised at EUR 77 per tonne.
+  </div>
+
+  <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem; font-weight: 600;">How Colombia's price compares to scientific estimates</p>
+  <div class="legend">
+    <span class="legend-item"><span class="legend-swatch" style="background:#A32D2D;"></span>Colombia current rate</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#185FA5;"></span>Conservative estimate (Rennert et al. 2022)</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#0F6E56;"></span>Higher estimate at 2% discount (Burke et al. 2026)</span>
+  </div>
+  <div class="chart-wrap" style="height: 220px;">
+    <canvas id="chart-gap" role="img" aria-label="Bar chart comparing Colombia's carbon price to scientific estimates. Colombia: EUR 8.2. Conservative estimate: USD 185. Higher estimate: USD 1013.">Colombia EUR 8.2, conservative estimate USD 185, higher estimate USD 1013.</canvas>
+  </div>
+
+  <div class="callout">
+    <strong>What would reform achieve?</strong> Raising the carbon tax to EUR 60 per tonne — still far below the scientific estimates — would cut emissions by 40% against Colombia's current climate target by 2030, and generate up to 1% of national income in additional government revenue annually. That's roughly equivalent to the cost of diesel subsidies in 2023.
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 2: WHY IT MATTERS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section id="why-it-matters">
+<div class="container">
+  <div class="section-label">Section 2</div>
+  <h2>Why it matters more for Colombia</h2>
+  <p class="lead">The global carbon price benchmark assumes a global average of damages. Colombia is not average. It is one of the world's most biodiverse countries, already experiencing accelerating ecosystem losses — and it contributes less than 0.5% of global emissions.</p>
+
+  <div class="card-row">
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--red);">0.42%</div>
+      <div class="stat-label">Colombia's share of global CO₂ emissions</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--amber);">2–10×</div>
+      <div class="stat-label">Colombia's climate damage per tonne relative to the global average</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color: var(--green-mid);">47%</div>
+      <div class="stat-label">Share of Colombian territory facing high climate risk</div>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Vulnerability categories">
+    <button class="tab-btn active" onclick="showTab('water')" role="tab" aria-selected="true">Water security</button>
+    <button class="tab-btn" onclick="showTab('biodiversity')" role="tab" aria-selected="false">Biodiversity</button>
+    <button class="tab-btn" onclick="showTab('conflict')" role="tab" aria-selected="false">Conflict & governance</button>
+    <button class="tab-btn" onclick="showTab('fiscal')" role="tab" aria-selected="false">Fiscal exposure</button>
+  </div>
+
+  <div id="tab-water" class="tab-panel active">
+    <div class="card">
+      <h4 style="font-size:1rem; margin-bottom: 0.5rem;">Páramos: Colombia's water towers</h4>
+      <p style="font-size:0.9rem; color: var(--text-muted); margin-bottom: 1rem;">High-altitude wetlands called <em>páramos</em> supply approximately 70% of Colombia's freshwater — to cities, farms, and hydropower plants. They are also among the most threatened ecosystems on Earth.</p>
+      <div class="chart-wrap" style="height: 220px;">
+        <canvas id="chart-water" role="img" aria-label="Bar chart showing that páramos supply 70% of Colombia's freshwater while facing persistent encroachment. 67% of ecosystems are threatened.">Water supply and ecosystem threat data.</canvas>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-biodiversity" class="tab-panel">
+    <div class="card">
+      <h4 style="font-size:1rem; margin-bottom: 0.5rem;">Ecosystem health is declining</h4>
+      <p style="font-size:0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Colombia's Ocean Health Index fell from 67 to 65 between 2014 and 2024 — below the global average of 69. Over half the national territory has already lost ecological integrity. More than two-thirds of ecosystems are now classified as threatened.</p>
+      <div class="chart-wrap" style="height: 220px;">
+        <canvas id="chart-bio" role="img" aria-label="Line chart showing Colombia's Ocean Health Index declining from 67 in 2014 to 65 in 2024, compared to the global average of 69.">OHI trend data.</canvas>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-conflict" class="tab-panel">
+    <div class="card">
+      <h4 style="font-size:1rem; margin-bottom: 0.5rem;">Armed conflict drives deforestation</h4>
+      <p style="font-size:0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Armed groups and illicit coca cultivation have driven the loss of more than 3 million hectares of forest over two decades, releasing 1.3 billion tonnes of CO₂. In 2023, 79 land defenders were killed in Colombia — 40% of all reported cases globally.</p>
+      <div class="chart-wrap" style="height: 220px;">
+        <canvas id="chart-conflict" role="img" aria-label="Bar chart showing deforestation trends in Colombia, with a low in 2023 followed by a 35% resurgence in 2024.">Deforestation trend data.</canvas>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-fiscal" class="tab-panel">
+    <div class="card">
+      <h4 style="font-size:1rem; margin-bottom: 0.5rem;">A double fiscal exposure</h4>
+      <p style="font-size:0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Colombia earns about 1.8% of GDP annually from fossil fuel taxes and royalties. At the same time, a full fossil fuel phase-out would cost up to 3% of GDP and 100,000 jobs. It is both a victim of climate damages and a potential loser from global decarbonisation.</p>
+      <div class="chart-wrap" style="height: 220px;">
+        <canvas id="chart-fiscal" role="img" aria-label="Bar chart comparing Colombia's fossil fuel revenue (1.8% GDP) against diesel subsidy cost (1.3% GDP in 2023, 2.5% in 2022) and the potential transition cost (up to 3% GDP).">Fiscal exposure data.</canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 3: DISCOUNT RATE -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section id="discount-rate">
+<div class="container">
+  <div class="section-label">Section 3</div>
+  <h2>The discount rate: an ethical choice, not just a number</h2>
+  <p class="lead">The "discount rate" is the single most influential parameter in calculating the carbon price. It determines how much we value future generations' wellbeing relative to our own. Move the slider to see how dramatically this one choice changes the result.</p>
+
+  <div class="controls">
+    <div class="control-group">
+      <label for="dr-slider">Discount rate: <span class="slider-val" id="dr-display">2%</span></label>
+      <input type="range" id="dr-slider" min="1" max="7" step="0.5" value="2">
+    </div>
+  </div>
+
+  <div class="card-row" style="margin-bottom: 1rem;">
+    <div class="stat-card">
+      <div class="stat-value" id="scc-result" style="color: var(--green-deep);">$1,013</div>
+      <div class="stat-label">Estimated SCC at selected discount rate (USD per tonne CO₂)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="scc-multiple" style="color: var(--amber);">124×</div>
+      <div class="stat-label">Times higher than Colombia's current carbon price</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="scc-label" style="color: var(--blue);">Near-zero preference</div>
+      <div class="stat-label">What this discount rate assumes</div>
+    </div>
+  </div>
+
+  <div class="chart-wrap" style="height: 280px;">
+    <canvas id="chart-dr" role="img" aria-label="Interactive bar chart showing how the Social Cost of Carbon changes with different discount rates, from USD 1013 at 2% to USD 283 at 5%.">SCC at different discount rates.</canvas>
+  </div>
+
+  <div id="dr-callout" class="callout blue">
+    <strong>At 2%:</strong> This is the rate used by recent scientific consensus (Burke et al., 2026 in <em>Nature</em>). It implies that the welfare of future generations matters nearly as much as our own. The result is USD 1,013 per tonne — 124 times Colombia's current carbon price.
+  </div>
+
+  <div class="callout amber">
+    <strong>Why Colombia's case is different:</strong> Standard models use a global average discount rate. But Colombia bears 2–10 times the global average climate damage per tonne of emissions — and its most critical ecosystems (páramos, the Amazon) face irreversible thresholds. Once crossed, no future investment can undo the loss. For those assets, the appropriate discount rate approaches zero.
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 4: TIPPING POINTS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section id="tipping-points">
+<div class="container">
+  <div class="section-label">Section 4</div>
+  <h2>Tipping points and irreversible losses</h2>
+  <p class="lead">A tipping point is a threshold beyond which a change becomes self-reinforcing and essentially permanent. Standard carbon price models treat all damages as gradual. They do not account for what happens when an ecosystem crosses a point of no return.</p>
+
+  <div class="callout amber">
+    <strong>The Amazon tipping point</strong> is estimated at roughly 20–25% total deforestation. Beyond this, reduced rainfall and increased fire risk trigger further forest loss without any additional human action. Colombia's 2024 deforestation resurgence (+35%) is pushing the country closer to this threshold.
+  </div>
+
+  <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600;">Amazon deforestation in Colombia: estimated trajectory</p>
+  <div class="legend">
+    <span class="legend-item"><span class="legend-swatch" style="background: #1D9E75;"></span>Historical progress</span>
+    <span class="legend-item"><span class="legend-swatch" style="background: #BA7517;"></span>2024 resurgence</span>
+    <span class="legend-item"><span class="legend-swatch" style="background: #A32D2D; border: 2px dashed #A32D2D; background: transparent;"></span>Tipping point threshold</span>
+  </div>
+  <div class="chart-wrap" style="height: 260px;">
+    <canvas id="chart-tip" role="img" aria-label="Line chart showing Colombian Amazon deforestation declining to a low in 2023, then rebounding in 2024, approaching the 20-25% tipping point threshold.">Deforestation trajectory.</canvas>
+  </div>
+
+  <div class="callout red">
+    <strong>The option that disappears:</strong> Colombia's scientific analysis identifies silvopastoral systems (integrated cattle and tree farming in Amazonian grasslands) as the single largest domestic climate solution — equivalent to 208 million tonnes of CO₂ at negative net cost. This option only exists while those grasslands remain ecologically intact. Once the tipping point is crossed, it is permanently forfeited.
+  </div>
+
+  <h3 style="font-size: 1rem; font-weight: 600; margin: 2rem 0 0.5rem;">The correlated risk problem</h3>
+  <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">Standard models treat physical climate risk and fiscal transition risk as independent. For Colombia, they are <em>correlated</em> — the same scenarios that produce the worst ecological damage also produce the worst fiscal outcomes.</p>
+
+  <div class="card-row">
+    <div class="card" style="border-left: 4px solid var(--red);">
+      <h4 style="font-size:0.9rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--red);">Worst physical scenario</h4>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">Fast warming → ecosystem collapse → higher spending on disaster response, water infrastructure, agricultural support</p>
+    </div>
+    <div class="card" style="border-left: 4px solid var(--amber);">
+      <h4 style="font-size:0.9rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--amber);">Worst fiscal scenario</h4>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">Fast global decarbonisation → Colombia's fossil fuel revenues collapse → less money for adaptation precisely when it's most needed</p>
+    </div>
+  </div>
+  <p style="font-size:0.85rem; color: var(--text-muted); margin-top: 0.75rem; font-style: italic;">Both scenarios tend to happen together. The carbon price formula has no way to model this interaction.</p>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 5: NATURAL CAPITAL -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section id="natural-capital">
+<div class="container">
+  <div class="section-label">Section 5</div>
+  <h2>What the carbon price cannot see</h2>
+  <p class="lead">The models used to calculate the carbon price are built around GDP — the value of goods and services that pass through markets. Nature's contribution to the economy does not pass through markets. So it does not count.</p>
+
+  <p style="font-size:0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">Click each ecosystem service to see what it contributes that GDP misses.</p>
+
+  <div class="ecosystem-grid" id="eco-grid">
+    <div class="eco-card" onclick="selectEco('water')">
+      <div class="eco-icon">💧</div>
+      <h4>Water regulation</h4>
+      <p>Páramos filter and store freshwater for cities, farms and power plants</p>
+    </div>
+    <div class="eco-card" onclick="selectEco('erosion')">
+      <div class="eco-icon">🌲</div>
+      <h4>Erosion control</h4>
+      <p>Forests prevent soil loss that would otherwise silt up hydropower dams</p>
+    </div>
+    <div class="eco-card" onclick="selectEco('flood')">
+      <div class="eco-icon">🌊</div>
+      <h4>Flood protection</h4>
+      <p>Wetlands and coastal mangroves absorb storm surges and flooding</p>
+    </div>
+    <div class="eco-card" onclick="selectEco('carbon')">
+      <div class="eco-icon">🌿</div>
+      <h4>Carbon storage</h4>
+      <p>The Amazon stores vast quantities of carbon that would otherwise warm the planet</p>
+    </div>
+  </div>
+
+  <div id="eco-detail" class="eco-detail"></div>
+
+  <h3 style="font-size: 1rem; font-weight: 600; margin: 2rem 0 0.75rem;">The Gross Ecosystem Product (GEP): measuring what GDP misses</h3>
+  <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; line-height: 1.6;">Researchers have developed a way to put a monetary value on nature's services using the same accounting logic as GDP. A pilot study in Colombia's Sinú Basin found that ecosystem services were worth <strong>1.7% of regional GDP</strong> annually — value completely invisible to standard economic analysis.</p>
+  <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; line-height: 1.6;">The chart below shows what happened in Qinghai Province, China — a high-altitude water tower for downstream populations, structurally similar to Colombia's páramos and Amazonia. The economy grew dramatically (GDP ×8 between 2000 and 2015), but the value nature provides remained enormous throughout. <strong>In 2000, GEP actually exceeded GDP.</strong> By 2015, despite massive economic growth, GEP was still three-quarters the size of GDP.</p>
+  <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.6;">The key point: <strong>economic growth did not replace or reduce what nature was worth</strong> — it just made nature's contribution less visible relative to the growing market economy. In Colombia, the same pattern applies. The páramos, forests and wetlands are generating enormous economic value that never appears in national statistics or carbon price calculations.</p>
+
+  <p style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.75rem;">Qinghai Province, China &#8212; GDP vs nature&#39;s contribution (GEP), year 2000 and year 2015</p>
+  <div id="gep-visual"></div>
+
+  <div class="callout">
+    <strong>What this means for Colombia:</strong> The water páramos supply to Bogotá, the erosion forests prevent around hydropower reservoirs, the floods wetlands absorb in the Magdalena Valley — all of this has real economic value. None of it appears in the carbon price calculation. A country that manages these assets well is generating wealth that the standard economic framework cannot see.
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- SECTION 6: RECOMMENDATIONS -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section id="recommendations">
+<div class="container">
+  <div class="section-label">Section 6</div>
+  <h2>Four actions that are achievable now</h2>
+  <p class="lead">All four recommendations are grounded in existing laws, existing institutions, and existing data. None requires new legislation. Each addresses a specific failure the carbon price framework cannot fix on its own.</p>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-dot done" aria-hidden="true">✓</div>
+      <div class="timeline-content">
+        <h4>Complete diesel subsidy reform <span class="badge badge-amber">In progress</span></h4>
+        <p>Petrol subsidies were eliminated in 2023 — a significant fiscal achievement. Diesel subsidies remain, costing 1.3% of GDP in 2023. Linking diesel prices to international market levels would generate 0.5–0.7% of GDP in fiscal savings. A structured three-step plan exists: restart stakeholder dialogues with transport operators; protect vulnerable households through Colombia's existing social welfare registry (Sisbén); develop medium-term freight sector modernisation support. The distributional risks are real — Andean geography forces near-total road dependence, and Pacific coastal fishers are particularly exposed — but the data show that current subsidies are regressive: according to OECD (2026), the top four income deciles capture the largest share of subsidy benefits. The poorest households benefit least from the subsidy but would be most affected by food price increases if reform is badly sequenced.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot partial" aria-hidden="true">⟳</div>
+      <div class="timeline-content">
+        <h4>Accelerate the Emissions Trading System <span class="badge badge-red">Delayed</span></h4>
+        <p>Colombia's 2021 Climate Action Law mandated an Emissions Trading System (ETS) covering 45% of national emissions from industry and energy. As of mid-2025, it has not started. The country's highest inter-ministerial climate body (CICC) can issue a formal binding calendar for the required monitoring and verification steps. Until these sectors face a real carbon price, carbon pricing reform is structurally incomplete.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot pending" aria-hidden="true">○</div>
+      <div class="timeline-content">
+        <h4>Measure what nature contributes <span class="badge badge-amber">Ready to act</span></h4>
+        <p>Colombia's national statistics agency (DANE) already has a decade of work on ecosystem accounts. A pilot in the Sinú Basin proved the methodology works. Colombia's national adaptation monitoring system (SIIVRA) will be fully operational by 2028. The CICC's climate finance committee (CGF) — which includes both DANE and the Ministry of Finance as formal members — can issue a policy guideline requiring ecosystem values to be included in public investment appraisal from 2028. No new legislation required.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot pending" aria-hidden="true">○</div>
+      <div class="timeline-content">
+        <h4>Standardise the discount rate for ecological assets <span class="badge badge-amber">Administrative decision</span></h4>
+        <p>Currently, the same climate investment can pass or fail a cost-benefit test depending on which analyst runs the numbers, because there is no standardised discount rate for irreversible ecological losses. The OECD explicitly recommends Colombia adopt standardised reference values. The National Planning Department (DNP) can issue this as an administrative guideline — not a law. It would directly determine whether carbon pricing reform clears cost-benefit tests.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>The bottom line:</strong> The tools, institutions and data to fix Colombia's carbon pricing framework are already in place. The question is not whether the economics justify action — the numbers support reform across every plausible scenario. The question is whether the political will exists to use the instruments that already exist.
+  </div>
+</div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <p>Based on: <em>The Social Cost of Carbon and Climate Policy in Colombia</em><br>
+  A policy report for the Ministry of Finance and Public Credit, GY455, London School of Economics, May 2026.</p>
+  <p style="margin-top: 0.5rem;">Key sources: Burke et al. (2026) <em>Nature</em>; Rennert et al. (2022) <em>Nature</em>; Ricke et al. (2018) <em>Nature Climate Change</em>; OECD Environmental Performance Review: Colombia (2026); UNDP/LSE Just Energy Transition CBA (2024).</p>
+</footer>
+
+<script>
+const COLOMBIA_PRICE = 8.2;
+
+const sccData = {
+  1:   1800, 1.5: 1400,
+  2:   1013, 2.5: 636,
+  3:   450,  3.5: 310,
+  4:   283,  4.5: 230,
+  5:   200,  5.5: 160,
+  6:   130,  6.5: 100,
+  7:   75
+};
+
+const drLabels = {
+  1:   'Near-zero: assumes future welfare nearly equals present welfare',
+  1.5: 'Near-zero: close to prescriptive economists\u2019 recommendation',
+  2:   'Near-zero: used by Burke et al. (2026, Nature)',
+  2.5: 'Low: used by Rennert et al. (2022, Nature)',
+  3:   'Moderate: commonly used in climate policy analysis',
+  3.5: 'Moderate-high: typical OECD infrastructure appraisal',
+  4:   'High: Colombia\u2019s social discount rate (Moore et al. 2019)',
+  4.5: 'High: middle of Colombia\u2019s recommended range',
+  5:   'High: upper end of Colombia\u2019s social discount rate range',
+  5.5: 'Very high: typical private sector hurdle rate',
+  6:   'Very high: discount rate implying little concern for future generations',
+  6.5: 'Very high: most of future damages treated as negligible',
+  7:   'Extreme: deeply discounts any harm occurring after ~20 years'
+};
+
+function formatSCC(v) {
+  if (v >= 1000) return '$' + v.toLocaleString();
+  return '$' + Math.round(v);
+}
+
+let drChart;
+
+function updateDrChart(rate) {
+  const val = sccData[rate] || 283;
+  document.getElementById('dr-display').textContent = rate + '%';
+  document.getElementById('scc-result').textContent = formatSCC(val);
+  document.getElementById('scc-multiple').textContent = Math.round(val / COLOMBIA_PRICE) + '\xd7';
+  const label = drLabels[rate] || '';
+  const short = label.split(':')[0];
+  document.getElementById('scc-label').textContent = short;
+
+  const rates = [2, 2.5, 3, 3.5, 4, 4.5, 5];
+  const vals  = rates.map(r => sccData[r]);
+  const colors = rates.map(r => r == rate ? '#0F6E56' : '#9FE1CB');
+  const borders = rates.map(r => r == rate ? '#0F6E56' : '#9FE1CB');
+
+  if (drChart) {
+    drChart.data.datasets[0].data = vals;
+    drChart.data.datasets[0].backgroundColor = colors;
+    drChart.data.datasets[0].borderColor = borders;
+    drChart.update('none');
+  }
+
+  const callout = document.getElementById('dr-callout');
+  if (rate <= 2) {
+    callout.className = 'callout blue';
+    callout.innerHTML = '<strong>At ' + rate + '%:</strong> ' + label.replace(/^[^:]+: ?/, '') + '. The SCC is ' + formatSCC(val) + ' per tonne — ' + Math.round(val/COLOMBIA_PRICE) + ' times Colombia\u2019s current carbon price.';
+  } else if (rate <= 4) {
+    callout.className = 'callout';
+    callout.innerHTML = '<strong>At ' + rate + '%:</strong> ' + label.replace(/^[^:]+: ?/, '') + '. Even at this rate, the SCC is ' + formatSCC(val) + ' — ' + Math.round(val/COLOMBIA_PRICE) + '\xd7 Colombia\u2019s current price. The case for reform still holds.';
+  } else {
+    callout.className = 'callout amber';
+    callout.innerHTML = '<strong>At ' + rate + '%:</strong> ' + label.replace(/^[^:]+: ?/, '') + '. The SCC falls to ' + formatSCC(val) + ' — still ' + Math.round(val/COLOMBIA_PRICE) + '\xd7 Colombia\u2019s current price. High discount rates effectively say future generations\u2019 suffering matters very little now.';
+  }
+}
+
+document.getElementById('dr-slider').addEventListener('input', function() {
+  updateDrChart(parseFloat(this.value));
+});
+
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+  event.target.setAttribute('aria-selected','true');
+  if (id === 'water') initWaterChart();
+  if (id === 'biodiversity') initBioChart();
+  if (id === 'conflict') initConflictChart();
+  if (id === 'fiscal') initFiscalChart();
+}
+
+const ecoDetails = {
+  water: '<strong>💧 Water regulation:</strong> Páramos act as natural sponges, absorbing rain and releasing it slowly year-round. Without them, Colombia\u2019s cities face severe water shortages in dry seasons and flooding in wet seasons. Bogotá and Medellín depend on páramo-fed rivers. This service has immense economic value — but it has no market price. When páramos are degraded, the cost shows up in water treatment plants, reservoir dredging, and crop failures. None of that appears in a carbon price calculation.',
+  erosion: '<strong>🌲 Erosion control:</strong> Andean forests hold the soil together on steep slopes. When forests are cleared, soil erodes rapidly into rivers, silting up hydropower dams that generate 70% of Colombia\u2019s electricity. The Magdalena River, Colombia\u2019s main artery, carries enormous sediment loads due to upstream deforestation. The cost of this sedimentation — in reduced hydropower capacity, dredging, and flood damage — runs into hundreds of millions of dollars annually. None of it shows up in carbon price models.',
+  flood: '<strong>🌊 Flood protection:</strong> Coastal mangroves and inland wetlands absorb storm energy and buffer flooding. The Ciénaga Grande de Santa Marta, once among the Americas\u2019 most productive wetlands, is in accelerating collapse — a direct economic loss for thousands of fishing families and a fiscal liability for disaster response. As the climate intensifies storms and sea level rises, the value of these natural buffers grows. A carbon price that cannot measure this value systematically underestimates the cost of losing it.',
+  carbon: '<strong>🌿 Carbon storage:</strong> Colombia\u2019s Amazon stores vast quantities of carbon in trees and soil. When forests are cleared — whether for cattle, coca, or palm oil — that carbon is released. The world\u2019s carbon price is supposed to account for this. But standard models rely on imperfect forest carbon offset markets (REDD+) that, in Colombia, were largely inactive until 2024 and have significant verification problems. More than half of carbon tax revenues were lost to unverified offset credits between 2021 and 2024.'
+};
+
+function selectEco(key) {
+  document.querySelectorAll('.eco-card').forEach(c => c.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  const det = document.getElementById('eco-detail');
+  det.innerHTML = ecoDetails[key];
+  det.classList.add('visible');
+}
+
+let waterChart, bioChart, conflictChart, fiscalChart;
+
+function initWaterChart() {
+  if (waterChart) return;
+  waterChart = new Chart(document.getElementById('chart-water'), {
+    type: 'bar',
+    data: {
+      labels: ['Páramo water supply\nto national total', 'Ecosystems\nclassified threatened', 'Territory with\nhigh climate risk'],
+      datasets: [{
+        label: 'Share (%)',
+        data: [70, 67, 47],
+        backgroundColor: ['#1D9E75','#BA7517','#A32D2D'],
+        borderColor: ['#0F6E56','#854F0B','#791F1F'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { color: 'rgba(128,128,128,0.15)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+function initBioChart() {
+  if (bioChart) return;
+  bioChart = new Chart(document.getElementById('chart-bio'), {
+    type: 'line',
+    data: {
+      labels: ['2014','2016','2018','2020','2022','2024'],
+      datasets: [
+        {
+          label: "Colombia Ocean Health Index",
+          data: [67, 66.5, 66, 65.5, 65.2, 65],
+          borderColor: '#A32D2D', backgroundColor: 'rgba(163,45,45,0.08)',
+          borderWidth: 2, pointRadius: 4, fill: true, tension: 0.3
+        },
+        {
+          label: "Global average",
+          data: [69, 69, 69, 69, 69, 69],
+          borderColor: '#1D9E75', borderDash: [6,4],
+          borderWidth: 2, pointRadius: 0, fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { mode: 'index', intersect: false }
+      },
+      scales: {
+        y: { min: 60, max: 75, grid: { color: 'rgba(128,128,128,0.15)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+function initConflictChart() {
+  if (conflictChart) return;
+  conflictChart = new Chart(document.getElementById('chart-conflict'), {
+    type: 'bar',
+    data: {
+      labels: ['2018','2019','2020','2021','2022','2023','2024 est.'],
+      datasets: [{
+        label: 'Relative deforestation index',
+        data: [100, 90, 75, 65, 55, 40, 54],
+        backgroundColor: d => d.dataIndex === 6 ? '#BA7517' : '#1D9E75',
+        borderColor: d => d.dataIndex === 6 ? '#854F0B' : '#0F6E56',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => v + '' }, grid: { color: 'rgba(128,128,128,0.15)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+function initFiscalChart() {
+  if (fiscalChart) return;
+  fiscalChart = new Chart(document.getElementById('chart-fiscal'), {
+    type: 'bar',
+    data: {
+      labels: ['Fossil fuel\nrevenue (annual)', 'Diesel subsidies\n2023', 'Diesel subsidies\n2022 peak', 'Transition cost\nestimate (max)'],
+      datasets: [{
+        label: '% of GDP',
+        data: [1.8, 1.3, 2.5, 3.0],
+        backgroundColor: ['#1D9E75','#BA7517','#A32D2D','#A32D2D'],
+        borderColor: ['#0F6E56','#854F0B','#791F1F','#791F1F'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => v + '% GDP' }, grid: { color: 'rgba(128,128,128,0.15)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+function initCharts() {
+  new Chart(document.getElementById('chart-gap'), {
+    type: 'bar',
+    data: {
+      labels: ['Colombia\ncurrent rate', 'Conservative\nestimate', 'Higher estimate\n(2% discount)'],
+      datasets: [{
+        label: 'Carbon price per tonne',
+        data: [8.2, 185, 1013],
+        backgroundColor: ['#A32D2D', '#185FA5', '#0F6E56'],
+        borderColor: ['#791F1F', '#0C447C', '#085041'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: ctx => (ctx.dataIndex === 0 ? 'EUR ' : 'USD ') + ctx.parsed.y } }
+      },
+      scales: {
+        y: { type: 'logarithmic', ticks: { callback: v => v < 100 ? '€'+v : '$'+v }, grid: { color: 'rgba(128,128,128,0.15)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  const rates = [2, 2.5, 3, 3.5, 4, 4.5, 5];
+  const vals  = rates.map(r => sccData[r]);
+  drChart = new Chart(document.getElementById('chart-dr'), {
+    type: 'bar',
+    data: {
+      labels: rates.map(r => r + '%'),
+      datasets: [{
+        label: 'SCC (USD per tonne)',
+        data: vals,
+        backgroundColor: rates.map(r => r == 2 ? '#0F6E56' : '#9FE1CB'),
+        borderColor: rates.map(r => r == 2 ? '#0F6E56' : '#9FE1CB'),
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y + '/tonne CO₂' } }
+      },
+      scales: {
+        y: { ticks: { callback: v => '$' + v }, grid: { color: 'rgba(128,128,128,0.15)' } },
+        x: { title: { display: true, text: 'Discount rate', color: '#888780', font: { size: 12 } }, grid: { display: false } }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('chart-tip'), {
+    type: 'line',
+    data: {
+      labels: ['2015','2016','2017','2018','2019','2020','2021','2022','2023','2024 est.'],
+      datasets: [
+        {
+          label: 'Cumulative Amazon deforestation (%)',
+          data: [14, 14.8, 15.6, 16.8, 17.5, 17.9, 18.4, 18.7, 18.5, 19.1],
+          borderColor: '#1D9E75',
+          backgroundColor: d => d.dataIndex >= 8 ? 'rgba(186,117,23,0.15)' : 'rgba(29,158,117,0.1)',
+          pointBackgroundColor: d => d.dataIndex >= 8 ? '#BA7517' : '#1D9E75',
+          borderWidth: 2.5,
+          pointRadius: 5, fill: true, tension: 0.3
+        },
+        {
+          label: 'Tipping point threshold (lower bound)',
+          data: Array(10).fill(20),
+          borderColor: '#A32D2D', borderDash: [8,4],
+          borderWidth: 2, pointRadius: 0, fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { mode: 'index', intersect: false }
+      },
+      scales: {
+        y: {
+          min: 10, max: 28,
+          ticks: { callback: v => v + '%' },
+          grid: { color: 'rgba(128,128,128,0.15)' },
+          title: { display: true, text: 'Estimated deforestation (%)', color: '#888780', font: { size: 11 } }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // GEP proportional visual — SVG rendered into #gep-visual
+  (function() {
+    const el = document.getElementById('gep-visual');
+    if (!el) return;
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const bg = isDark ? '#242422' : '#f8f7f4';
+    const textCol = isDark ? '#D3D1C7' : '#5F5E5A';
+    const textStrong = isDark ? '#f0ede6' : '#1a1a18';
+    const gdpCol = '#378ADD';
+    const gepCol = '#1D9E75';
+    const borderCol = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)';
+
+    el.innerHTML = `
+    <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;border-radius:10px;background:${bg};">
+      <!-- Title labels -->
+      <text x="175" y="28" text-anchor="middle" font-size="13" font-weight="600" fill="${textStrong}" font-family="system-ui,sans-serif">Year 2000</text>
+      <text x="175" y="44" text-anchor="middle" font-size="11" fill="${textCol}" font-family="system-ui,sans-serif">The economy was small</text>
+      <text x="525" y="28" text-anchor="middle" font-size="13" font-weight="600" fill="${textStrong}" font-family="system-ui,sans-serif">Year 2015</text>
+      <text x="525" y="44" text-anchor="middle" font-size="11" fill="${textCol}" font-family="system-ui,sans-serif">Economy grew 8× — but nature still mattered enormously</text>
+
+      <!-- YEAR 2000: GDP bar (width ~100 of 200 total) -->
+      <!-- GDP 2000: 100 units, GEP 2000: 110 units — almost equal, GEP slightly larger -->
+      <rect x="75" y="60" width="90" height="36" rx="4" fill="${gdpCol}" opacity="0.85"/>
+      <text x="120" y="83" text-anchor="middle" font-size="11" font-weight="600" fill="white" font-family="system-ui,sans-serif">GDP = 100</text>
+
+      <rect x="75" y="106" width="99" height="36" rx="4" fill="${gepCol}" opacity="0.85"/>
+      <text x="124" y="129" text-anchor="middle" font-size="11" font-weight="600" fill="white" font-family="system-ui,sans-serif">GEP = 110 ✦</text>
+
+      <text x="75" y="162" font-size="10" fill="${textCol}" font-family="system-ui,sans-serif">← Nature slightly exceeded the whole market economy</text>
+
+      <!-- divider -->
+      <line x1="350" y1="55" x2="350" y2="230" stroke="${borderCol}" stroke-width="1" stroke-dasharray="4,3"/>
+
+      <!-- YEAR 2015: GDP bar (width ~400 of 700 total, scaled to fit) -->
+      <!-- GDP 2015: 800 units. GEP 2015: 600 units = 75% of GDP -->
+      <!-- Scale: max bar width = 220px, 800 units = 220px => 1 unit = 0.275px -->
+      <rect x="380" y="60" width="220" height="36" rx="4" fill="${gdpCol}" opacity="0.85"/>
+      <text x="490" y="83" text-anchor="middle" font-size="11" font-weight="600" fill="white" font-family="system-ui,sans-serif">GDP = 800 (grew 8×)</text>
+
+      <rect x="380" y="106" width="165" height="36" rx="4" fill="${gepCol}" opacity="0.85"/>
+      <text x="462" y="129" text-anchor="middle" font-size="11" font-weight="600" fill="white" font-family="system-ui,sans-serif">GEP = 600 (75% of GDP)</text>
+
+      <text x="380" y="162" font-size="10" fill="${textCol}" font-family="system-ui,sans-serif">← Nature still ¾ the size of a massively larger economy</text>
+
+      <!-- Legend -->
+      <rect x="240" y="195" width="12" height="12" rx="2" fill="${gdpCol}" opacity="0.85"/>
+      <text x="257" y="205" font-size="11" fill="${textCol}" font-family="system-ui,sans-serif">GDP — market economic activity</text>
+      <rect x="240" y="215" width="12" height="12" rx="2" fill="${gepCol}" opacity="0.85"/>
+      <text x="257" y="225" font-size="11" fill="${textCol}" font-family="system-ui,sans-serif">GEP — economic value nature provides</text>
+
+      <!-- Key message -->
+      <text x="350" y="248" text-anchor="middle" font-size="10" font-style="italic" fill="${textCol}" font-family="system-ui,sans-serif">Source: Ouyang et al. (2020), PNAS. GDP in year 2000 = 100 (index).</text>
+    </svg>`;
+  })();
+
+  initWaterChart();
+  updateDrChart(2);
+}
+
+document.querySelectorAll('.nav a').forEach(a => {
+  a.addEventListener('click', function() {
+    document.querySelectorAll('.nav a').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      document.querySelectorAll('.nav a').forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { threshold: 0.3 });
+
+document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
+
+window.addEventListener('load', initCharts);
+</script>
+</body>
+</html>
